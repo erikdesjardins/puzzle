@@ -12,7 +12,6 @@ fn swap_nibbles(x: u128) -> u128 {
 }
 
 fn swap_bytes(x: u128, i: usize, j: usize) -> u128 {
-    assert!(i < j);
     let i_byte = (x >> (i * 8)) as u8;
     let j_byte = (x >> (j * 8)) as u8;
 
