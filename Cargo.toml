@@ -1,0 +1,12 @@
+[package]
+name = "puzzle"
+version = "0.1.0"
+edition = "2018"
+publish = false
+
+[dependencies]
+
+[profile.release]
+panic = "abort"
+lto = true
+codegen-units = 1
