@@ -127,11 +127,13 @@ fn to_state(tiles: [[(Hole, Hole, Prod, Prod); 4]; 4]) -> u128 {
 }
 
 fn main() {
+    // the ultimate puzzle 4x4
+    // https://c1.staticflickr.com/1/67/184473307_8e2cf41093_b.jpg
     let tiles = [
-        [(HO, HO, PO, PO), (HO, HO, PO, PC), (HO, HO, PO, PO), (HO, HO, PO, PO)],
-        [(HO, HO, PC, PC), (HC, HA, PI, PI), (HO, HO, PO, PO), (HO, HO, PO, PO)],
-        [(HO, HO, PO, PO), (HO, HO, PO, PO), (HO, HO, PO, PO), (HO, HO, PO, PO)],
-        [(HO, HO, PO, PO), (HO, HO, PO, PO), (HO, HO, PO, PO), (HO, HO, PO, PO)],
+        [(HI, HC, PI, PI), (HI, HO, PC, PA), (HO, HI, PA, PO), (HO, HC, PO, PI)],
+        [(HO, HA, PA, PA), (HA, HI, PO, PI), (HI, HI, PO, PC), (HC, HO, PO, PC)],
+        [(HO, HI, PO, PO), (HI, HO, PI, PA), (HI, HA, PI, PC), (HC, HA, PO, PI)],
+        [(HA, HO, PO, PC), (HO, HC, PA, PO), (HO, HC, PI, PI), (HC, HA, PC, PA)],
     ];
     let state = to_state(tiles);
     check_all_permutations_of(state);
