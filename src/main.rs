@@ -29,6 +29,7 @@ fn valid(state: u128) -> bool {
     let succeeding_rows = state >> (4 * 8);
     // compare each row with the following row, ignoring wraparound comparisons
     let rows_match = all_bytes_nonzero((preceeding_rows & swap_nibbles(succeeding_rows)) | 0xffffffff000000000000000000000000);
+    if !rows_match { return false }
 
     // d4 c4 b4 a4 d3 c3 b3 a3 d2 c2 b2 a2 d1 c1 b1 a1
     let preceeding_cols = state;
@@ -36,10 +37,9 @@ fn valid(state: u128) -> bool {
     let succeeding_cols = state >> (1 * 8);
     // compare each col with the following col, ignoring cross-row comparisons
     let cols_match = all_bytes_nonzero((preceeding_cols & swap_nibbles(succeeding_cols)) | 0xff000000ff000000ff000000ff000000);
+    if !cols_match { return false }
 
-    // TODO try using a branch in between cols/rows and see if it's faster
-    // TODO it will probably get threaded into the loop branch anyways
-    rows_match && cols_match
+    true
 }
 
 fn all_permutations_of(original_state: u128, mut output: impl FnMut(u128)) {
