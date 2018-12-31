@@ -12,13 +12,13 @@ fn swap_nibbles(x: u128) -> u128 {
 }
 
 fn swap_bytes(x: u128, i: usize, j: usize) -> u128 {
-    let i_byte = (x >> (i * 8)) as u8;
-    let j_byte = (x >> (j * 8)) as u8;
+    let i_byte = (x >> (i * 8)) & 0xff;
+    let j_byte = (x >> (j * 8)) & 0xff;
 
-    let i_replaced = (x          & !(0xff << (i * 8))) | (i_byte << (i * 8)) as u128;
-    let j_replaced = (i_replaced & !(0xff << (j * 8))) | (j_byte << (j * 8)) as u128;
+    let j_to_i = (x      & !(0xff << (i * 8))) | (j_byte << (i * 8));
+    let i_to_j = (j_to_i & !(0xff << (j * 8))) | (i_byte << (j * 8));
 
-    j_replaced
+    i_to_j
 }
 
 fn valid(state: u128) -> bool {
