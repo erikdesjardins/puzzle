@@ -91,6 +91,7 @@ fn print(mut state: u128) {
         }
         println!();
     }
+    println!();
 }
 
 #[derive(Copy, Clone)]
