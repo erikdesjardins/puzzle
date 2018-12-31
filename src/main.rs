@@ -10,8 +10,8 @@ fn swap_bytes(x: u128, i: usize, j: usize) -> u128 {
     let i_byte = (x >> (i * 8)) as u8;
     let j_byte = (x >> (j * 8)) as u8;
 
-    let i_replaced = x          & !(0xff << (i * 8)) | (i_byte << (i * 8)) as u128;
-    let j_replaced = i_replaced & !(0xff << (j * 8)) | (j_byte << (j * 8)) as u128;
+    let i_replaced = (x          & !(0xff << (i * 8))) | (i_byte << (i * 8)) as u128;
+    let j_replaced = (i_replaced & !(0xff << (j * 8))) | (j_byte << (j * 8)) as u128;
 
     j_replaced
 }
