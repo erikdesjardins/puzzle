@@ -5,6 +5,12 @@ fn all_bytes_nonzero(x: u128) -> bool {
     discriminant == 0
 }
 
+fn swap_nibbles(x: u128) -> u128 {
+    let high_to_low = (x >> 4) & 0x0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f;
+    let low_to_high = (x << 4) & 0xf0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0;
+    high_to_low | low_to_high
+}
+
 fn swap_bytes(x: u128, i: usize, j: usize) -> u128 {
     assert!(i < j);
     let i_byte = (x >> (i * 8)) as u8;
@@ -20,14 +26,14 @@ fn valid(state: u128) -> bool {
     // a1 b1 c1 d1 a2 b2 c2 d2 a3 b3 c3 d3 a4 b4 c4 d4
     let succeeding_rows = state;
     //             a1 b1 c1 d1 a2 b2 c2 d2 a3 b3 c3 d3
-    let preceeding_rows = state >> (4 * 8);
+    let preceeding_rows = swap_nibbles(state >> (4 * 8));
     // compare each row with the following row, ignoring wraparound comparisons
     let rows_match = all_bytes_nonzero((preceeding_rows & succeeding_rows) | 0xffffffff000000000000000000000000);
 
     // a1 b1 c1 d1 a2 b2 c2 d2 a3 b3 c3 d3 a4 b4 c4 d4
     let succeeding_cols = state;
     //    a1 b1 c1 xx a2 b2 c2 xx a3 b3 c3 xx a4 b4 c4
-    let preceeding_cols = state >> (1 * 8);
+    let preceeding_cols = swap_nibbles(state >> (1 * 8));
     // compare each col with the following col, ignoring cross-row comparisons
     let cols_match = all_bytes_nonzero((preceeding_cols & succeeding_cols) | 0xff000000ff000000ff000000ff000000);
 
