@@ -108,15 +108,18 @@ fn check_all_permutations_of(state: u128) {
 #[cold]
 #[inline(never)]
 fn print(mut state: u128) {
-    let mut pull_low_byte = move || {
+    let mut pull_2_bits = move || {
         let low = state as u8;
-        state >>= 8;
-        low
+        state >>= 2;
+        low & 0b11
     };
 
-    for _ in 0..4 {
-        for _ in 0..4 {
-            print!("{:0>2x} ", pull_low_byte());
+    for _row in 0..4 {
+        for _col in 0..4 {
+            for _side in 0..4 {
+                print!("{}", pull_2_bits());
+            }
+            print!(" ");
         }
         println!();
     }
@@ -126,10 +129,10 @@ fn print(mut state: u128) {
 #[derive(Copy, Clone)]
 #[repr(u8)]
 enum Hole {
-    HO /* ctagon */ = 1 << 7,
-    HC /* ross */ = 1 << 6,
-    HI /* n arrow */ = 1 << 5,
-    HA /* rrow */ = 1 << 4,
+    HO /* ctagon */ = 0,
+    HC /* ross */ = 1,
+    HI /* n arrow */ = 2,
+    HA /* rrow */ = 3,
 }
 use self::Hole::*;
 
@@ -137,10 +140,10 @@ use self::Hole::*;
 #[repr(u8)]
 // note In/Out swapped, since from the perspective of each tile the opposite ones fit together
 enum Prod {
-    PO /* ctagon */ = 1 << 3,
-    PC /* ross */ = 1 << 2,
-    PI /* n arrow */ = 1 << 0,
-    PA /* rrow */ = 1 << 1,
+    PO /* ctagon */ = 0,
+    PC /* ross */ = 1,
+    PI /* n arrow */ = 3,
+    PA /* rrow */ = 2,
 }
 use self::Prod::*;
 
@@ -148,7 +151,11 @@ fn to_state(tiles: [[(Hole, Hole, Prod, Prod); 4]; 4]) -> u128 {
     let mut state = 0;
     for (i, row) in tiles.iter().enumerate() {
         for (j, &(h1, h2, p1, p2 )) in row.iter().enumerate() {
-            let byte = h1 as u8 | h2 as u8 | p1 as u8 | p2 as u8;
+            let byte =
+                ((h1 as u8) << (0 * 2)) |
+                ((h2 as u8) << (1 * 2)) |
+                ((p1 as u8) << (2 * 2)) |
+                ((p2 as u8) << (3 * 2));
             state |= (byte as u128) << ((i * 4 + j) * 8);
         }
     }
