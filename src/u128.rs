@@ -28,6 +28,8 @@ impl Ext for u128 {
         high_to_low | low_to_high
     }
 
+    // doesn't touch memory, but many more instructions (slightly slower in practice)
+    #[cfg(any())]
     fn swap(self, i: usize, j: usize) -> Self {
         let i_byte = (self >> (i * 8)) & 0xff;
         let j_byte = (self >> (j * 8)) & 0xff;
@@ -36,5 +38,18 @@ impl Ext for u128 {
         let i_to_j = (j_to_i & !(0xff << (j * 8))) | (i_byte << (j * 8));
 
         i_to_j
+    }
+
+    // uses memory, but much fewer instructions (slightly faster in practice)
+    #[cfg(all())]
+    fn swap(mut self, i: usize, j: usize) -> Self {
+        let i_byte = self.as_bytes()[i];
+        let j_byte = self.as_bytes()[j];
+        {
+            let this = self.as_mut_bytes();
+            this[i] = j_byte;
+            this[j] = i_byte;
+        }
+        self
     }
 }
