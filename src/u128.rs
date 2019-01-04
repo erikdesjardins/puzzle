@@ -1,10 +1,22 @@
+use std::mem::transmute;
+
 pub trait Ext {
+    fn as_bytes(&self) -> &[u8; 16];
+    fn as_mut_bytes(&mut self) -> &mut [u8; 16];
     fn all_bytes_nonzero(self) -> bool;
     fn swap_nibbles(self) -> Self;
     fn swap(self, i: usize, j: usize) -> Self;
 }
 
 impl Ext for u128 {
+    fn as_bytes(&self) -> &[u8; 16] {
+        unsafe { transmute(self) }
+    }
+
+    fn as_mut_bytes(&mut self) -> &mut [u8; 16] {
+        unsafe { transmute(self) }
+    }
+
     fn all_bytes_nonzero(self) -> bool {
         let discriminant = (self - 0x01010101010101010101010101010101) & !self & 0x80808080808080808080808080808080;
         discriminant == 0
@@ -26,4 +38,3 @@ impl Ext for u128 {
         i_to_j
     }
 }
-
