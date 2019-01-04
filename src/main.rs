@@ -41,11 +41,8 @@ fn valid(state: u128) -> bool {
     true
 }
 
-// todo exploit structure after swapping: only check those adjacent to the swaps
-//  -- no, while this may be faster, that's not the problem, since the current implementation would take <1 day
-//     the real problem is that it's not selective enough: it only filters down to ~1/7,
-//     and it doesn't preserve ordering information about the edges,
-//     so we can't easily recover that information to do a more expensive search if we wanted to
+// todo perhaps use a "naive" search, recursing 16 times and picking the only pieces that fit
+//  to opt, use typelevel numbers to terminate recursion (if necessary) and force inline
 fn all_permutations_of(original_state: u128, mut output: impl FnMut(u128)) {
     const N: usize = size_of::<u128>();
     let is_even = |x| x % 2 == 0;
