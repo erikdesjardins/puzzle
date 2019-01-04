@@ -53,6 +53,8 @@ fn all_permutations_of(original_state: u128, mut output: impl FnMut(u128)) {
     }
 }
 
+// normal
+#[cfg(all())]
 fn check_all_permutations_of(state: u128) {
     all_permutations_of(state, |state| {
         if valid(state) {
@@ -60,6 +62,48 @@ fn check_all_permutations_of(state: u128) {
         }
     })
 }
+
+// for vtune
+#[cfg(any())]
+fn check_all_permutations_of(state: u128) {
+    // include calls to this to avoid dce
+    #[cold]
+    #[inline(never)]
+    fn sink(x: u128) {
+        std::sync::atomic::compiler_fence(std::sync::atomic::Ordering::SeqCst);
+    }
+    all_permutations_of(state, |state| {
+        if valid(state) {
+            sink(state);
+        }
+    });
+}
+
+// for time profiling
+#[cfg(any())]
+fn check_all_permutations_of(state: u128) {
+    use std::time::Instant;
+    let mut i = 0;
+    let mut count = 0;
+    let start = Instant::now();
+    #[cold]
+    #[inline(never)]
+    fn end(start: Instant, valid: u32, all: u32) {
+        let elapsed = start.elapsed();
+        let secs = (elapsed.as_secs() as f64) + (elapsed.subsec_nanos() as f64) / (1_000_000_000 as f64);
+        let nanos = (elapsed.as_secs() as u128 * 1_000_000_000) + elapsed.subsec_nanos() as u128;
+        println!("{:0.1} s, {} ns/1, {:0.0} M/s", secs, nanos / all as u128, all as f64 / secs / 1_000_000.);
+        println!("{:0.1} %", valid as f64 / all as f64 * 100.);
+        panic!();
+    }
+    all_permutations_of(state, |state| { i += 1;
+        if i == 1_000_000_000 {
+            end(start, count, i);
+        }
+        if valid(state) { count += 1; }
+    })
+}
+
 
 #[cold]
 #[inline(never)]
