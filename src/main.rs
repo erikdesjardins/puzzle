@@ -138,6 +138,8 @@ fn find_solutions(state: State) {
                         state[j] = state[i];
                         state[i] = j_piece;
                         T::run(state);
+                        state[i] = state[j];
+                        state[j] = j_piece.rotate_left(rot * 4);
                     }
                 }
             }
