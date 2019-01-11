@@ -135,7 +135,6 @@ fn find_solutions(state: State) {
                         (state[above] >> BOTTOM) & 0b1111 == !(j_piece >> TOP) & 0b1111
                     };
                     if before_valid && above_valid {
-                        // todo maybe pass down state as mut ref and reverse the swap after
                         state[j] = state[i];
                         state[i] = j_piece;
                         T::run(state);
@@ -154,9 +153,9 @@ fn find_solutions(state: State) {
         }
     }
 
-    type S15 = S<S<S<S<S<S<S<S<S<S<S<S<S<S<S<S<Z>>>>>>>>>>>>>>>>;
-    assert_eq!(S15::INDEX, 0);
-    S15::run(state);
+    type S16 = S<S<S<S<S<S<S<S<S<S<S<S<S<S<S<S<Z>>>>>>>>>>>>>>>>;
+    assert_eq!(S16::INDEX, 0);
+    S16::run(state);
 }
 
 fn main() {
