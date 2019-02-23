@@ -1,4 +1,5 @@
 use std::marker::PhantomData;
+use std::sync::atomic::{AtomicUsize, Ordering::Relaxed};
 
 use self::Edge::*;
 
@@ -105,18 +106,28 @@ fn print(tiles: Tiles) {
     println!();
 }
 
+macro_rules! x16 { ( $x:expr ) => { [$x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x] } }
+
+static VALID: AtomicUsize = AtomicUsize::new(0);
+static NO_MORE_PIECES_FIT: [AtomicUsize; 16] = x16![AtomicUsize::new(0)];
+static SUCCESS_IMPOSSIBLE: [AtomicUsize; 16] = x16![AtomicUsize::new(0)];
+static SUCCESS_POSSIBLE: [AtomicUsize; 16] = x16![AtomicUsize::new(0)];
+
 fn find_solutions(state: State) {
     // recursion with typelevel bounds to ensure all recursive calls can be inlined
     struct Z;
     struct S<T>(PhantomData<T>);
     trait Recur {
         const INDEX: usize;
-        fn run(state: State);
+        fn run(state: State) -> bool /* found some valid state */;
     }
     impl<T: Recur> Recur for S<T> {
         const INDEX: usize = T::INDEX - 1;
-        fn run(mut state: State) {
+        fn run(mut state: State) -> bool {
             let i = Self::INDEX;
+            // track whether we recursed and whether a recursive call was successful
+            let mut any_recursed = false;
+            let mut found_solution = false;
             // try swapping with all future indices,
             // and the current index (i.e. keeping it in place)
             for j in i..16 {
@@ -135,23 +146,34 @@ fn find_solutions(state: State) {
                         (state[above] >> BOTTOM) & 0b1111 == !(j_piece >> TOP) & 0b1111
                     };
                     if before_valid && above_valid {
+                        any_recursed = true;
                         state[j] = state[i];
                         state[i] = j_piece;
-                        T::run(state);
+                        found_solution |= T::run(state);
                         state[i] = state[j];
                         state[j] = j_piece.rotate_left(rot * 4);
                     }
                 }
             }
+            if !any_recursed {
+                NO_MORE_PIECES_FIT[Self::INDEX].fetch_add(1, Relaxed);
+            }
+            if !found_solution {
+                SUCCESS_IMPOSSIBLE[Self::INDEX].fetch_add(1, Relaxed);
+            } else {
+                SUCCESS_POSSIBLE[Self::INDEX].fetch_add(1, Relaxed);
+            }
+            found_solution
         }
     }
     impl Recur for Z {
         const INDEX: usize = 16;
         #[cold]
-        #[inline(never)]
-        fn run(state: State) {
+        fn run(state: State) -> bool {
             // this point is only reached if all indices are valid
             print(state_to_tiles(state));
+            VALID.fetch_add(1, Relaxed);
+            true
         }
     }
 
@@ -170,4 +192,11 @@ fn main() {
         [(HA, HO, PO, PC), (HO, HC, PA, PO), (HO, HC, PI, PI), (HC, HA, PC, PA)],
     ];
     find_solutions(tiles_to_state(tiles));
+
+    println!("Valid states: {}", VALID.load(Relaxed));
+    let fmt = |arr: &[AtomicUsize; 16]| arr.iter().map(|a| format!("{:>6}", a.load(Relaxed))).collect::<Vec<_>>().join(", ");
+    println!("States (by # pieces):  {}", (0..16).map(|i| format!("{:>6}", i)).collect::<Vec<_>>().join("  "));
+    println!("- no more pieces fit [{}]", fmt(&NO_MORE_PIECES_FIT));
+    println!("- success impossible [{}]", fmt(&SUCCESS_IMPOSSIBLE));
+    println!("- success possible   [{}]", fmt(&SUCCESS_POSSIBLE));
 }
