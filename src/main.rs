@@ -133,25 +133,26 @@ fn find_solutions(state: State) {
             for j in i..16 {
                 for rot in 0..4 {
                     // piece to be swapped into the current index
-                    let j_piece = state[j].rotate_right(rot * 4);
+                    let j_piece = state[j];
+                    let new_j_piece = j_piece.rotate_right(rot * 4);
                     // check index immediately before and above
                     let is_first_col = (i % 4) == 0;
                     let before_valid = is_first_col || {
                         let before = i - 1;
-                        (state[before] >> RIGHT) & 0b1111 == !(j_piece >> LEFT) & 0b1111
+                        (state[before] >> RIGHT) & 0b1111 == !(new_j_piece >> LEFT) & 0b1111
                     };
                     let is_first_row = i < 4;
                     let above_valid = is_first_row || {
                         let above = i - 4;
-                        (state[above] >> BOTTOM) & 0b1111 == !(j_piece >> TOP) & 0b1111
+                        (state[above] >> BOTTOM) & 0b1111 == !(new_j_piece >> TOP) & 0b1111
                     };
                     if before_valid && above_valid {
                         any_recursed = true;
                         state[j] = state[i];
-                        state[i] = j_piece;
+                        state[i] = new_j_piece;
                         found_solution |= T::run(state);
                         state[i] = state[j];
-                        state[j] = j_piece.rotate_left(rot * 4);
+                        state[j] = j_piece;
                     }
                 }
             }
