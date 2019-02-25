@@ -1,0 +1,55 @@
+# Results:
+
+Valid states: 48 (without flipping) (in 0.104s)
+States (by # pieces):       0       1       2       3       4       5       6       7       8       9      10      11      12      13      14      15
+- no more pieces fit [     0,      0,      0,      0,      0,  61538,  51632,  39001,     40, 117277,  63868,  29305,    855,  26245,   5602,    958]
+- success impossible [     0,     34,    448,   3453,  23077, 141313, 108640,  76634,  48754, 200553, 100296,  43039,  15642,  32424,   6527,    958]
+- success possible   [     1,     30,     40,     43,     45,     45,     45,     45,     46,     48,     48,     48,     48,     48,     48,     48]
+
+Valid states: 1833640 (with flipping) (in 86.756s)
+States (by # pieces):       0       1       2       3       4        5        6        7        8         9        10        11        12         13        14        15
+- no more pieces fit [     0,      0,      0,      0,      0,  749964, 1318786, 2181418,   10841, 29643019, 31996866, 30591021,  2728526, 115161646, 49967396, 14434210]
+- success impossible [     0,      0,      0,   1005, 128374, 3801933, 5670722, 7676934, 9154382, 82561055, 76630526, 61681599, 40727430, 169749544, 63055877, 14434210]
+- success possible   [     1,    128,   1952,  26963, 241578,  712707,  806530,  897022, 1019598,  1327387,  1360652,  1400205,  1468842,   1734508,  1750901,  1770902]
+
+# Misc notes:
+
+- totals without (with) flipping:
+  - 396_321 (278_783_693) states where no more pieces fit
+  - 801_792 (535_273_591) states where success is impossible
+  -     676 ( 14_519_876) states where success is possible
+
+- these stats don't include all states that a human might try, since it always tries to insert a piece in the "next" location, row by row
+  - specifically, like:  1  2  3  4
+                         5  6  7  8
+                         9 10 11 12
+                        13 14 15 16
+  - this means that the statistics and following notes aren't _necessarily_ accurate for humans, who might add pieces to the side
+    - although they're probably good enough, since one tends to end up with 2x4 pieces filled in, or similar
+    - thus "synchronizing" with the program, which happens to explore all possible 2x4 configurations (and 1x4, 3x4, 4x4-1, -2, etc.)
+
+- initially I didn't implement flipping, because it's solvable without, and my intuition was that it would be much slower for little gain
+  - which seems mostly right, as it takes nearly 1000x longer to find all solutions---but it may find the first solution faster
+
+- initially I thought it might be easier (for humans) without flipping...
+  - because the box says 200+ solutions with flipping, vs. 48 without, i.e. only ~4x the solutions,
+  - but flipping seems to increase the search space by more than that
+    - it's difficult to estimate by how much, because most newly possible states will be invalid and unreachable by sensible human strategies
+      - i.e. each piece could be flipped or not, so multiply by 2^16, but most of these will be bogus
+    - but I think you could reasonably say that it increases search space by 16x, since you could try flipping any one piece and then fixing it
+- ...but it looks like it's easier with flipping:
+  - not only are there ~38200x more possible solutions,
+  - but it relies less on a "perfect" initial state: the number of "success possible" states keeps increasing with flipping allowed
+    - whereas your result without flipping is basically set in stone by the time you place 4 pieces
+      - (assuming you make a line like the computer, or that these results are generalizable)
+    - compare the number of states where success is possible/impossible with different numbers of pieces to get a better idea of this:
+      - e.g. at 8 pieces (2x4), a full 1/10 of configurations can possibly lead to success with flipping, but only 1/1000 without flipping
+    - see also the total number of possible/impossible states, above
+
+- in fact, initially I thought it would be completely intractable for a human to solve:
+  - per back-of-the envelope estimates: 16! piece positions * 4^16 piece rotations ~ 10000000000000000000000 board states
+    - (not accounting for pieces not fitting together, which is hard to estimate)
+  - but as it turns out, in nearly all of those states, the pieces don't fit together
+    - so much so, that sensible (possibly incomplete) states with pieces fitting together make up parts-per-trillion of total states
+    - thus you can get a trillion-times speedup with naive tree search over brute-force search
+      - I didn't even have to do anything fancy with heuristic search!
