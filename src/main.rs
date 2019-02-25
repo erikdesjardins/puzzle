@@ -1,5 +1,6 @@
 use std::marker::PhantomData;
 use std::sync::atomic::{AtomicUsize, Ordering::Relaxed};
+use std::time::Instant;
 
 use self::Edge::*;
 
@@ -215,9 +216,17 @@ fn main() {
         [(HO, HI, PO, PO), (HI, HO, PI, PA), (HI, HA, PI, PC), (HC, HA, PO, PI)],
         [(HA, HO, PO, PC), (HO, HC, PA, PO), (HO, HC, PI, PI), (HC, HA, PC, PA)],
     ];
+    let start_time = Instant::now();
     find_solutions(tiles_to_state(tiles));
+    let elapsed_time = start_time.elapsed();
 
-    println!("Valid states: {} ({} flipping)", VALID.load(Relaxed), if ALLOW_FLIPPING { "with" } else { "without" });
+    println!(
+        "Valid states: {} ({} flipping) (in {}.{:0>3}s)",
+        VALID.load(Relaxed),
+        if ALLOW_FLIPPING { "with" } else { "without" },
+        elapsed_time.as_secs(),
+        elapsed_time.subsec_millis(),
+    );
     let fmt = |arr: &[AtomicUsize; 16]| arr.iter().map(|a| format!("{:>6}", a.load(Relaxed))).collect::<Vec<_>>().join(", ");
     println!("States (by # pieces):  {}", (0..16).map(|i| format!("{:>6}", i)).collect::<Vec<_>>().join("  "));
     println!("- no more pieces fit [{}]", fmt(&NO_MORE_PIECES_FIT));
