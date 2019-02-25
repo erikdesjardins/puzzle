@@ -83,6 +83,8 @@ fn state_to_tiles(state: State) -> Tiles {
 }
 
 fn print(tiles: Tiles) {
+    if !PRINT_SOLUTIONS { return; }
+
     fn edge_to_str(edge: Edge) -> &'static str {
         match edge {
             HO => "(o)",
@@ -113,6 +115,24 @@ static NO_MORE_PIECES_FIT: [AtomicUsize; 16] = x16![AtomicUsize::new(0)];
 static SUCCESS_IMPOSSIBLE: [AtomicUsize; 16] = x16![AtomicUsize::new(0)];
 static SUCCESS_POSSIBLE: [AtomicUsize; 16] = x16![AtomicUsize::new(0)];
 
+fn apply_transform(tile: u16, tfm: u32) -> u16 {
+    let tile = tile.rotate_right((tfm % 4) * 4);
+    if tfm < 4 {
+        tile
+    } else {
+        // flip tile by swapping opposite sides:
+        //  0b dddd cccc bbbb aaaa
+        //  ┌ a ┐      ┌ c ┐
+        //  d   b  ->  d   b
+        //  └ c ┘      └ a ┘
+        //  0xdcba -> 0xdabc
+        let side_b_and_d = tile & 0xf0f0;
+        let side_a = tile & 0x000f;
+        let side_c = tile & 0x0f00;
+        side_b_and_d | (side_a << (2 * 4)) | (side_c >> (2 * 4))
+    }
+}
+
 fn find_solutions(state: State) {
     // recursion with typelevel bounds to ensure all recursive calls can be inlined
     struct Z;
@@ -131,10 +151,10 @@ fn find_solutions(state: State) {
             // try swapping with all future indices,
             // and the current index (i.e. keeping it in place)
             for j in i..16 {
-                for rot in 0..4 {
+                for tfm in 0..if ALLOW_FLIPPING { 8 } else { 4 } {
                     // piece to be swapped into the current index
                     let j_piece = state[j];
-                    let new_j_piece = j_piece.rotate_right(rot * 4);
+                    let new_j_piece = apply_transform(j_piece, tfm);
                     // check index immediately before and above
                     let is_first_col = (i % 4) == 0;
                     let before_valid = is_first_col || {
@@ -183,6 +203,9 @@ fn find_solutions(state: State) {
     S16::run(state);
 }
 
+const PRINT_SOLUTIONS: bool = true;
+const ALLOW_FLIPPING: bool = false;
+
 fn main() {
     // the ultimate puzzle 4x4
     // https://c1.staticflickr.com/1/67/184473307_8e2cf41093_b.jpg
@@ -194,7 +217,7 @@ fn main() {
     ];
     find_solutions(tiles_to_state(tiles));
 
-    println!("Valid states: {}", VALID.load(Relaxed));
+    println!("Valid states: {} ({} flipping)", VALID.load(Relaxed), if ALLOW_FLIPPING { "with" } else { "without" });
     let fmt = |arr: &[AtomicUsize; 16]| arr.iter().map(|a| format!("{:>6}", a.load(Relaxed))).collect::<Vec<_>>().join(", ");
     println!("States (by # pieces):  {}", (0..16).map(|i| format!("{:>6}", i)).collect::<Vec<_>>().join("  "));
     println!("- no more pieces fit [{}]", fmt(&NO_MORE_PIECES_FIT));
