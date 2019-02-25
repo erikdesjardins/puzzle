@@ -112,6 +112,7 @@ fn print(tiles: Tiles) {
 macro_rules! x16 { ( $x:expr ) => { [$x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x] } }
 
 static VALID: AtomicUsize = AtomicUsize::new(0);
+static ATTEMPTS: AtomicUsize = AtomicUsize::new(0);
 static NO_MORE_PIECES_FIT: [AtomicUsize; 16] = x16![AtomicUsize::new(0)];
 static SUCCESS_IMPOSSIBLE: [AtomicUsize; 16] = x16![AtomicUsize::new(0)];
 static SUCCESS_POSSIBLE: [AtomicUsize; 16] = x16![AtomicUsize::new(0)];
@@ -147,6 +148,7 @@ fn find_solutions(state: State) {
         fn run(mut state: State) -> bool {
             let i = Self::INDEX;
             // track whether we recursed and whether a recursive call was successful
+            let mut attempts = 0;
             let mut any_recursed = false;
             let mut found_solution = false;
             // try swapping with all future indices,
@@ -167,6 +169,7 @@ fn find_solutions(state: State) {
                         let above = i - 4;
                         (state[above] >> BOTTOM) & 0b1111 == !(new_j_piece >> TOP) & 0b1111
                     };
+                    attempts += 1;
                     if before_valid && above_valid {
                         any_recursed = true;
                         state[j] = state[i];
@@ -177,6 +180,7 @@ fn find_solutions(state: State) {
                     }
                 }
             }
+            ATTEMPTS.fetch_add(attempts, Relaxed);
             if !any_recursed {
                 NO_MORE_PIECES_FIT[Self::INDEX].fetch_add(1, Relaxed);
             }
@@ -227,6 +231,7 @@ fn main() {
         elapsed_time.as_secs(),
         elapsed_time.subsec_millis(),
     );
+    println!("Attempted states: {}", ATTEMPTS.load(Relaxed));
     let fmt = |arr: &[AtomicUsize; 16]| arr.iter().map(|a| format!("{:>6}", a.load(Relaxed))).collect::<Vec<_>>().join(", ");
     println!("States (by # pieces):  {}", (0..16).map(|i| format!("{:>6}", i)).collect::<Vec<_>>().join("  "));
     println!("- no more pieces fit [{}]", fmt(&NO_MORE_PIECES_FIT));
