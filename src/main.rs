@@ -60,7 +60,7 @@ const LEFT: u8 = 3 * 4;
 fn tiles_to_state(tiles: Tiles) -> State {
     let mut state = [0; 16];
     for (i, row) in tiles.iter().enumerate() {
-        for (j, &(a, b, c, d )) in row.iter().enumerate() {
+        for (j, &(a, b, c, d)) in row.iter().enumerate() {
             state[i * 4 + j] |= (a as u16) << TOP;
             state[i * 4 + j] |= (b as u16) << RIGHT;
             state[i * 4 + j] |= (c as u16) << BOTTOM;
