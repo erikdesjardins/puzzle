@@ -4,6 +4,7 @@ use std::time::Instant;
 
 use self::Edge::*;
 
+#[rustfmt::skip]
 #[derive(Copy, Clone)]
 #[repr(u8)]
 enum Edge {
@@ -84,7 +85,9 @@ fn state_to_tiles(state: State) -> Tiles {
 }
 
 fn print(tiles: Tiles) {
-    if !PRINT_SOLUTIONS { return; }
+    if !PRINT_SOLUTIONS {
+        return;
+    }
 
     fn edge_to_str(edge: Edge) -> &'static str {
         match edge {
@@ -99,11 +102,17 @@ fn print(tiles: Tiles) {
         }
     }
     for row in tiles.iter() {
-        for &(a, _, _, _) in row { print!(" ┌{}┐ ", edge_to_str(a)); }
+        for &(a, _, _, _) in row {
+            print!(" ┌{}┐ ", edge_to_str(a));
+        }
         println!();
-        for &(_, b, _, d) in row { print!("{} {}", edge_to_str(d), edge_to_str(b)); }
+        for &(_, b, _, d) in row {
+            print!("{} {}", edge_to_str(d), edge_to_str(b));
+        }
         println!();
-        for &(_, _, c, _) in row { print!(" └{}┘ ", edge_to_str(c)); }
+        for &(_, _, c, _) in row {
+            print!(" └{}┘ ", edge_to_str(c));
+        }
         println!();
     }
     println!();
@@ -221,6 +230,7 @@ const ALLOW_FLIPPING: bool = false;
 fn main() {
     // the ultimate puzzle 4x4
     // https://c1.staticflickr.com/1/67/184473307_8e2cf41093_b.jpg
+    #[rustfmt::skip]
     let tiles = [
         [(HI, HC, PI, PI), (HI, HO, PC, PA), (HO, HI, PA, PO), (HO, HC, PO, PI)],
         [(HO, HA, PA, PA), (HA, HI, PO, PI), (HI, HI, PO, PC), (HC, HO, PO, PC)],
@@ -239,8 +249,19 @@ fn main() {
         elapsed_time.subsec_millis(),
     );
     println!("Attempted states: {}", ATTEMPTS.load(Relaxed));
-    let fmt = |arr: &[AtomicUsize; 16]| arr.iter().map(|a| format!("{:>6}", a.load(Relaxed))).collect::<Vec<_>>().join(", ");
-    println!("States (by # pieces):  {}", (0..16).map(|i| format!("{:>6}", i)).collect::<Vec<_>>().join("  "));
+    let fmt = |arr: &[AtomicUsize; 16]| {
+        arr.iter()
+            .map(|a| format!("{:>6}", a.load(Relaxed)))
+            .collect::<Vec<_>>()
+            .join(", ")
+    };
+    println!(
+        "States (by # pieces):  {}",
+        (0..16)
+            .map(|i| format!("{:>6}", i))
+            .collect::<Vec<_>>()
+            .join("  ")
+    );
     println!("- no more pieces fit [{}]", fmt(&NO_MORE_PIECES_FIT));
     println!("- success impossible [{}]", fmt(&SUCCESS_IMPOSSIBLE));
     println!("- success possible   [{}]", fmt(&SUCCESS_POSSIBLE));
