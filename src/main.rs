@@ -12,8 +12,8 @@ enum Edge {
     HC /* ross */ = 1 & 0b1111,
     HI /* n arrow */ = 2 & 0b1111,
     HA /* rrow */ = 3 & 0b1111,
-    // Prods
-    // Each prod is the complement of the matching hole
+    // Protrusions
+    // Each protrusion is the complement of the matching hole
     // Note: In/Out swapped, since from the perspective of each tile the opposite ones fit together
     PO /* ctagon */ = !0 & 0b1111,
     PC /* ross */ = !1 & 0b1111,
