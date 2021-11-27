@@ -156,29 +156,35 @@ fn find_solutions(state: State) {
             // and the current index (i.e. keeping it in place)
             for j in i..16 {
                 for tfm in 0..if ALLOW_FLIPPING { 8 } else { 4 } {
+                    attempts += 1;
                     // piece to be swapped into the current index
                     let j_piece = state[j];
                     let new_j_piece = apply_transform(j_piece, tfm);
-                    // check index immediately before and above
+                    // check index immediately before...
                     let is_first_col = (i % 4) == 0;
                     let before_valid = is_first_col || {
                         let before = i - 1;
                         (state[before] >> RIGHT) & 0b1111 == !(new_j_piece >> LEFT) & 0b1111
                     };
+                    if !before_valid {
+                        continue;
+                    }
+                    // ...and above
                     let is_first_row = i < 4;
                     let above_valid = is_first_row || {
                         let above = i - 4;
                         (state[above] >> BOTTOM) & 0b1111 == !(new_j_piece >> TOP) & 0b1111
                     };
-                    attempts += 1;
-                    if before_valid && above_valid {
-                        any_recursed = true;
-                        state[j] = state[i];
-                        state[i] = new_j_piece;
-                        found_solution |= T::run(state);
-                        state[i] = state[j];
-                        state[j] = j_piece;
+                    if !above_valid {
+                        continue;
                     }
+                    // swap pieces and recurse
+                    state[j] = state[i];
+                    state[i] = new_j_piece;
+                    any_recursed = true;
+                    found_solution |= T::run(state);
+                    state[i] = state[j];
+                    state[j] = j_piece;
                 }
             }
             ATTEMPTS.fetch_add(attempts, Relaxed);

@@ -1,13 +1,13 @@
 # Results:
 
-Valid states: 48 (without flipping) (in 0.064s)
+Valid states: 48 (without flipping) (in 0.058s)
 Attempted states: 25796228
 States (by # pieces):       0       1       2       3       4       5       6       7       8       9      10      11      12      13      14      15
 - no more pieces fit [     0,      0,      0,      0,      0,  61538,  51632,  39001,     40, 117277,  63868,  29305,    855,  26245,   5602,    958]
 - success impossible [     0,     34,    448,   3453,  23077, 141313, 108640,  76634,  48754, 200553, 100296,  43039,  15642,  32424,   6527,    958]
 - success possible   [     1,     30,     40,     43,     45,     45,     45,     45,     46,     48,     48,     48,     48,     48,     48,     48]
 
-Valid states: 1833640 (with flipping) (in 47.241s)
+Valid states: 1833640 (with flipping) (in 44.815s)
 Attempted states: 19819634960
 States (by # pieces):       0       1       2       3       4        5        6        7        8         9        10        11        12         13        14        15
 - no more pieces fit [     0,      0,      0,      0,      0,  749964, 1318786, 2181418,   10841, 29643019, 31996866, 30591021,  2728526, 115161646, 49967396, 14434210]
@@ -17,7 +17,7 @@ States (by # pieces):       0       1       2       3       4        5        6 
 # Misc notes:
 
 - totals without (with) flipping:
-  - 25_796_228 (19_819_634_960) attempted states; throughput ~400M/s (~420M/s)
+  - 25_796_228 (19_819_634_960) attempted states; throughput ~440M/s (~440M/s)
   - 396_321 (278_783_693) states where no more pieces fit
   - 801_792 (535_273_591) states where success is impossible
   -     676 ( 14_519_876) states where success is possible
