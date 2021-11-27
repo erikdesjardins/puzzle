@@ -135,6 +135,7 @@ fn apply_transform(tile: u16, tfm: u32) -> u16 {
     }
 }
 
+#[inline(never)]
 fn find_solutions(state: State) {
     // recursion with typelevel bounds to ensure all recursive calls can be inlined
     struct Z;
