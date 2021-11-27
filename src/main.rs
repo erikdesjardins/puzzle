@@ -109,13 +109,13 @@ fn print(tiles: Tiles) {
     println!();
 }
 
-macro_rules! x16 { ( $x:expr ) => { [$x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x, $x] } }
+const ZERO: AtomicUsize = AtomicUsize::new(0);
 
-static VALID: AtomicUsize = AtomicUsize::new(0);
-static ATTEMPTS: AtomicUsize = AtomicUsize::new(0);
-static NO_MORE_PIECES_FIT: [AtomicUsize; 16] = x16![AtomicUsize::new(0)];
-static SUCCESS_IMPOSSIBLE: [AtomicUsize; 16] = x16![AtomicUsize::new(0)];
-static SUCCESS_POSSIBLE: [AtomicUsize; 16] = x16![AtomicUsize::new(0)];
+static VALID: AtomicUsize = ZERO;
+static ATTEMPTS: AtomicUsize = ZERO;
+static NO_MORE_PIECES_FIT: [AtomicUsize; 16] = [ZERO; 16];
+static SUCCESS_IMPOSSIBLE: [AtomicUsize; 16] = [ZERO; 16];
+static SUCCESS_POSSIBLE: [AtomicUsize; 16] = [ZERO; 16];
 
 fn apply_transform(tile: u16, tfm: u32) -> u16 {
     let tile = tile.rotate_right((tfm % 4) * 4);
